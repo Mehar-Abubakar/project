@@ -1,0 +1,168 @@
+portfolio/
+├── main/
+│   ├── migrations/
+│   ├── templates/
+│   │   ├── index.html
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── views.py
+│   ├── urls.py
+├── portfolio/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+├── static/
+│   ├── css/
+│   │   ├── style.css
+├── manage.py
+django-admin startproject portfolio
+cd portfolio
+django-admin startapp main
+# portfolio/settings.py
+
+INSTALLED_APPS = [
+    ...
+    'main',
+    'django.contrib.staticfiles',
+]
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+TEMPLATES = [
+    {
+        ...
+        'DIRS': [BASE_DIR / 'main/templates'],
+        ...
+    },
+]
+# portfolio/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('main.urls')),
+]
+# main/urls.py
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.index, name='index'),
+]
+# main/views.py
+
+from django.shortcuts import render
+
+def index(request):
+    return render(request, 'index.html')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muhammad Abubakar Portfolio</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header class="bg-dark text-white text-center py-5">
+        <h1>Muhammad Abubakar</h1>
+        <p>Full-Stack Developer</p>
+        <p>Python | JavaScript | Django</p>
+    </header>
+    <section class="container py-5">
+        <h2>Education</h2>
+        <ul>
+            <li>Matriculation: School Name</li>
+            <li>Intermediate: College Name</li>
+            <li>Bachelor's: University Name</li>
+        </ul>
+    </section>
+    <section class="container py-5">
+        <h2>Skills</h2>
+        <ul>
+            <li>Python</li>
+            <li>JavaScript</li>
+            <li>Django</li>
+        </ul>
+    </section>
+    <section class="container py-5">
+        <h2>Experience</h2>
+        <p>Detail your professional experience here.</p>
+    </section>
+    <section class="container py-5">
+        <h2>Contact</h2>
+        <form action="/contact/" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="message" class="form-label">Message</label>
+                <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+/* static/css/style.css */
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1, h2 {
+    font-weight: bold;
+}
+# main/models.py
+
+from django.db import models
+
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+
+    def __str__(self):
+        return self.name
+python manage.py makemigrations
+python manage.py migrate
+# main/admin.py
+
+from django.contrib import admin
+from .models import Contact
+
+admin.site.register(Contact)
+# main/views.py
+
+from django.shortcuts import render, redirect
+from .models import Contact
+
+def index(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        email = request.POST['email']
+        message = request.POST['message']
+        
+        contact = Contact(name=name, email=email, message=message)
+        contact.save()
+        
+        return redirect('index')
+        
+    return render(request, 'index.html')
+python manage.py runserver
